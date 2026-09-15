@@ -9,14 +9,13 @@
 </p>
 
 <p align="center">
-  <a href="https://console.apify.com/actors/K0XRDbUteacQL3jeF">
-    <img alt="Run on Apify Console" src="https://img.shields.io/badge/Run%20on-Apify%20Console-00C2B2?style=for-the-badge&logo=apify&logoColor=white">
+  <a href="https://apify.com/stefano_seggio/aozora-bunko-public-domain-text-feed">
+    <img alt="Run on Apify Store" src="https://img.shields.io/badge/Run%20on-Apify%20Store-00C2B2?style=for-the-badge&logo=apify&logoColor=white">
   </a>
 </p>
 
 <p align="center">
-This actor is currently private in Apify Console. Once published to the Store it will also be publicly runnable at
-<a href="https://apify.com/stefano_seggio/aozora-bunko-public-domain-text-feed">apify.com/stefano_seggio/aozora-bunko-public-domain-text-feed</a>.
+Live and public at <a href="https://apify.com/stefano_seggio/aozora-bunko-public-domain-text-feed">apify.com/stefano_seggio/aozora-bunko-public-domain-text-feed</a>. Owner console: <a href="https://console.apify.com/actors/K0XRDbUteacQL3jeF">console.apify.com/actors/K0XRDbUteacQL3jeF</a>.
 </p>
 
 ## What this is
