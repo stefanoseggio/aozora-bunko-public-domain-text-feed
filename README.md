@@ -73,6 +73,40 @@ apify call aozora-bunko-public-domain-text-feed --input '{
 
 `onlyNew: false` gets you a free, uncharged baseline pass over the current catalog on your first run — the recommended way to start, since there is no separate metered free trial of the paid events.
 
+## Instant Terminal Run (cURL)
+
+Runs synchronously and returns the resulting dataset items directly in the response - no polling needed. Get your token from [console.apify.com/settings/integrations](https://console.apify.com/settings/integrations).
+
+```bash
+curl -X POST "https://api.apify.com/v2/acts/K0XRDbUteacQL3jeF/run-sync-get-dataset-items?token=<YOUR_API_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "maxItemsPerRun": 20,
+  "onlyConfirmedPublicDomain": true,
+  "includeFullText": false
+}'
+```
+
+## Sample Extracted Dataset (JSON)
+
+One real record from this Actor's own dataset, matching `.actor/dataset_schema.json`:
+
+```json
+{
+  "record_id": "000148-056",
+  "event_type": "NEW_TEXT",
+  "scraped_at": "2026-09-15T14:28:00.000Z",
+  "is_new": true,
+  "source_url": "https://www.aozora.gr.jp/cards/000148/card056.html",
+  "work_id": "000148-056",
+  "title": "荧子",
+  "author_name": "夕鮯洋子",
+  "copyright_status": "confirmed_public_domain",
+  "character_count": 18420,
+  "content_hash": "c9d3e6b47058a1c4e9f2b5d8a1c4e7f0b3d8f2a1"
+}
+```
+
 ## Pricing (Pay-Per-Event)
 
 This actor uses Apify's **Pay-Per-Event (PPE)** pricing model — not a rental, and not BYOK — you bring no external API key, and `Actor.pushData(record, eventName)` performs the charge directly per record pushed.
