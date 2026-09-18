@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Data / pricing / Actor behavior question
+    url: https://apify.com/stefano_seggio/aozora-bunko-public-domain-text-feed
+    about: Questions about the live Actor's data, pricing, behavior bugs, or the Apify Store listing itself belong on the Store's Issues tab, not this repository.
+  - name: Report a security vulnerability
+    url: https://github.com/stefanoseggio/aozora-bunko-public-domain-text-feed/security/advisories/new
+    about: Use private vulnerability reporting for anything security-sensitive - see SECURITY.md.
