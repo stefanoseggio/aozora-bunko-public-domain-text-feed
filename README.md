@@ -51,12 +51,13 @@ A single global `hasCompletedBaseline` flag guards the cold start — the whole 
 | Capability | Input field | What it actually does |
 |---|---|---|
 | Confirmed-public-domain filter | `onlyConfirmedPublicDomain` (default `true`) | Keeps only catalog rows where Aozora's own copyright flag reads `なし` (no copyright); set `false` to also include author-permitted free-use works that are *not* public domain |
-| Full-text decoding | `includeFullText` (default `true`) | Downloads the linked per-work text ZIP, decodes Shift_JIS, strips the legend preamble and ruby/annotation markup, embeds `plain_text` + `raw_text_with_markup` |
+| Full-text decoding | `includeFullText` (default `false`) | Downloads the linked per-work text ZIP, decodes Shift_JIS, strips the legend preamble and ruby/annotation markup, embeds `plain_text` + `raw_text_with_markup` |
 | Free-vs-paid delta mode | `onlyNew` (default `true`) | `true` pushes only charged `NEW_TEXT`/`REVISED_TEXT`/`STATUS_CHANGE` rows; `false` pushes every filtered row once as an uncharged `SNAPSHOT_NO_DIFF` baseline |
 | Author scoping | `authorIdAllowlist` | Restricts monitoring to specific Aozora 人物ID authors instead of the full catalog |
-| Per-run spend cap | `maxItemsPerRun` (default `0` = unlimited) | Caps charged events for a single run, independent of your Apify account spending limit |
+| Per-run spend cap | `maxItemsPerRun` (default `20`, `0` = unlimited) | Caps charged events for a single run, independent of your Apify account spending limit |
 | Polite-crawl tuning | `requestDelayMs`, `maxRetries`, `requestTimeoutSecs` | Configurable delay (default 500ms), retry backoff (default 5 attempts), and per-request timeout (default 30s) against a small, unrated, volunteer-run server |
 | Independent state namespaces | `deltaStateName` (default `"default"`) | Runs multiple schedules — e.g. different author allowlists — without them draining each other's baseline state |
+| State reset | `resetState` (default `false`) | Clears this feed's stored seen-work state before the run, so the next run re-baselines from scratch |
 | Dual-fingerprint delta engine | *(internal)* | SHA-256 `status_fingerprint` (copyright flag) and `content_fingerprint` (metadata fields) drive classification; deliberately excludes `content_hash`/`character_count` to avoid false "changed" reclassification |
 
 ## Cost & BYOK Disclosure
@@ -75,7 +76,7 @@ This actor uses Apify's **Pay-Per-Event (PPE)** pricing model — not a rental �
 
 ## Quickstart
 
-Get an Apify API token from your [Apify Console integrations page](https://console.apify.com/account/integrations).
+Get an Apify API token from your [Apify Console integrations page](https://console.apify.com/settings/integrations).
 
 ### cURL (synchronous, no polling)
 
@@ -145,6 +146,61 @@ for (const item of items) {
 
 Runnable copies of the Python and Node.js examples above (calling the actor by its internal ID rather than its slug) live in `examples/aozora_delta_feed.py` and `examples/aozora-delta-feed.js` in this repo.
 
+## Use this from Claude Desktop, Cursor, or Windsurf (via MCP)
+
+This Actor is also reachable as an MCP server through Apify's own hosted `@apify/actors-mcp-server`, scoped to just this Actor via a `?tools=` query string - not the full Delta Registry fleet.
+
+**Claude Desktop** (via the `mcp-remote` stdio bridge):
+
+```json
+{
+  "mcpServers": {
+    "delta-registry-aozora-bunko-public-domain-text-feed": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.apify.com/?tools=stefano_seggio/aozora-bunko-public-domain-text-feed",
+        "--header",
+        "Authorization: Bearer ${APIFY_TOKEN}"
+      ]
+    }
+  }
+}
+```
+
+**Cursor** (native HTTP transport):
+
+```json
+{
+  "mcpServers": {
+    "delta-registry-aozora-bunko-public-domain-text-feed": {
+      "url": "https://mcp.apify.com/?tools=stefano_seggio/aozora-bunko-public-domain-text-feed",
+      "headers": {
+        "Authorization": "Bearer ${APIFY_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+**Windsurf** (uses `serverUrl`, not `url`):
+
+```json
+{
+  "mcpServers": {
+    "delta-registry-aozora-bunko-public-domain-text-feed": {
+      "serverUrl": "https://mcp.apify.com/?tools=stefano_seggio/aozora-bunko-public-domain-text-feed",
+      "headers": {
+        "Authorization": "Bearer ${env:APIFY_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+Replace `${APIFY_TOKEN}` with a real token from [Apify Console → Settings → Integrations](https://console.apify.com/settings/integrations). Note that `mcp-remote` does not expand shell environment variables inside the JSON string itself - paste the literal token and keep this file out of version control; Windsurf's `${env:APIFY_TOKEN}` genuinely does resolve from your environment. For the full 28-actor Delta Registry MCP configuration across all three clients, see [MCP_INTEGRATION.md](https://github.com/stefanoseggio/delta-registry-website/blob/main/MCP_INTEGRATION.md).
+
 ## Input & Output Schema
 
 This is a documentation/integration wrapper repo with no local `.actor/input_schema.json` - the field list below is the real, complete input surface as documented and exercised in this README's own examples above.
@@ -154,12 +210,13 @@ This is a documentation/integration wrapper repo with no local `.actor/input_sch
 | Field | Default | Description |
 |---|---|---|
 | `onlyConfirmedPublicDomain` | `true` | Keeps only catalog rows where Aozora's own copyright flag reads `なし` (no copyright); set `false` to also include author-permitted free-use works that are *not* public domain. |
-| `includeFullText` | `true` | Downloads the linked per-work text ZIP, decodes Shift_JIS, strips the legend preamble and ruby/annotation markup, embeds `plain_text` + `raw_text_with_markup`. |
+| `includeFullText` | `false` | Downloads the linked per-work text ZIP, decodes Shift_JIS, strips the legend preamble and ruby/annotation markup, embeds `plain_text` + `raw_text_with_markup`. |
 | `onlyNew` | `true` | `true` pushes only charged `NEW_TEXT`/`REVISED_TEXT`/`STATUS_CHANGE` rows; `false` pushes every filtered row once as an uncharged `SNAPSHOT_NO_DIFF` baseline. |
 | `authorIdAllowlist` | - | Restricts monitoring to specific Aozora 人物ID authors instead of the full catalog. |
-| `maxItemsPerRun` | `0` (unlimited) | Caps charged events for a single run, independent of your Apify account spending limit. |
+| `maxItemsPerRun` | `20` (`0` = unlimited) | Caps charged events for a single run, independent of your Apify account spending limit. |
 | `requestDelayMs` / `maxRetries` / `requestTimeoutSecs` | `500` / `5` / `30` | Polite-crawl tuning against a small, unrated, volunteer-run server. |
 | `deltaStateName` | `"default"` | Namespaces baseline state, so multiple schedules (e.g. different author allowlists) don't drain each other's state. |
+| `resetState` | `false` | Clears this feed's stored seen-work state before the run, so the next run re-baselines from scratch. |
 
 ### Output
 
@@ -200,6 +257,8 @@ One real record from this Actor's own dataset, matching `.actor/dataset_schema.j
 | `character_count` | Character count of the decoded work text (present when `includeFullText: true`). |
 | `content_hash` | Hash of the decoded work text, used to detect a `REVISED_TEXT` re-publication (present when `includeFullText: true`). |
 | `plain_text` / `raw_text_with_markup` | Ruby-gloss-stripped plain text and the markup-intact original (present when `includeFullText: true`; omitted from the summary sample above for brevity). |
+
+Additional fields present in `.actor/dataset_schema.json` but not shown above: `event_id` (idempotency key), `author_id` (Aozora 人物ID), `first_published_date`, `source_last_updated`, `text_file_url` / `xhtml_file_url` (Aozora's own source file links), `changed_fields` (populated on `REVISED_TEXT`), and the `status_fingerprint` / `content_fingerprint` SHA-256 hashes described under Real feature set above.
 
 ## Known limitations, disclosed rather than hidden
 
